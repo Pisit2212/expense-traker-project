@@ -19,6 +19,9 @@ class TransactionProvider extends ChangeNotifier {
   bool loading = true;
   String? error;
 
+  String? _categoryFilter;
+  String _query = '';
+
   TransactionProvider(String uid) : _service = FirestoreService(uid) {
     _sub = _service.watchAll().listen(
       (data) {
@@ -36,10 +39,28 @@ class TransactionProvider extends ChangeNotifier {
   }
 
   DateTime get month => _month;
+  String? get categoryFilter => _categoryFilter;
+  String get query => _query;
 
   List<TransactionModel> get monthItems => _all
       .where((t) => t.date.year == _month.year && t.date.month == _month.month)
       .toList();
+
+  /// รายการที่แสดงในลิสต์ (ผ่านตัวกรองหมวดหมู่และคำค้นหาแล้ว)
+  List<TransactionModel> get filteredItems {
+    final q = _query.trim().toLowerCase();
+    return monthItems.where((t) {
+      final okCat = _categoryFilter == null || t.category == _categoryFilter;
+      final okQuery = q.isEmpty ||
+          t.note.toLowerCase().contains(q) ||
+          t.category.toLowerCase().contains(q);
+      return okCat && okQuery;
+    }).toList();
+  }
+
+  /// หมวดหมู่ที่มีในเดือนที่เลือก (ไว้ทำปุ่มกรอง)
+  List<String> get monthCategories =>
+      (monthItems.map((t) => t.category).toSet().toList()..sort());
 
   double get income => monthItems
       .where((t) => t.isIncome)
@@ -51,7 +72,6 @@ class TransactionProvider extends ChangeNotifier {
 
   double get balance => income - expense;
 
-  /// ยอดรวมแยกตามหมวดหมู่ของเดือนที่เลือก เรียงจากมากไปน้อย
   Map<String, double> categoryTotals({required bool income}) {
     final map = <String, double>{};
     for (final t in monthItems.where((t) => t.isIncome == income)) {
@@ -62,12 +82,11 @@ class TransactionProvider extends ChangeNotifier {
     return Map.fromEntries(sorted);
   }
 
-  /// ยอดรายรับ-รายจ่ายย้อนหลัง n เดือน (สิ้นสุดที่เดือนที่เลือก)
   List<MonthTotal> lastMonths(int n) {
     return List.generate(n, (i) {
       final m = DateTime(_month.year, _month.month - (n - 1 - i));
-      final items = _all.where(
-          (t) => t.date.year == m.year && t.date.month == m.month);
+      final items =
+          _all.where((t) => t.date.year == m.year && t.date.month == m.month);
       double inc = 0, exp = 0;
       for (final t in items) {
         if (t.isIncome) {
@@ -82,6 +101,17 @@ class TransactionProvider extends ChangeNotifier {
 
   void changeMonth(int delta) {
     _month = DateTime(_month.year, _month.month + delta);
+    _categoryFilter = null; // เปลี่ยนเดือนแล้วล้างตัวกรองหมวดหมู่
+    notifyListeners();
+  }
+
+  void setCategoryFilter(String? category) {
+    _categoryFilter = category;
+    notifyListeners();
+  }
+
+  void setQuery(String q) {
+    _query = q;
     notifyListeners();
   }
 

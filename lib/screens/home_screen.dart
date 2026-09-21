@@ -14,7 +14,6 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final uid = AuthService().currentUser!.uid;
-    // สร้าง Provider หลังล็อกอิน และถูกทำลายเมื่อล็อกเอาต์ (ข้อมูลไม่ปนกันระหว่างบัญชี)
     return ChangeNotifierProvider(
       create: (_) => TransactionProvider(uid),
       child: const _HomeView(),
@@ -55,7 +54,7 @@ class _HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.watch<TransactionProvider>();
     final money = NumberFormat('#,##0.00');
-    final items = p.monthItems;
+    final items = p.filteredItems;
 
     return Scaffold(
       appBar: AppBar(
@@ -133,14 +132,59 @@ class _HomeView extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          // ช่องค้นหา
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: TextField(
+              onChanged: p.setQuery,
+              decoration: const InputDecoration(
+                hintText: 'ค้นหาจากโน้ตหรือหมวดหมู่',
+                prefixIcon: Icon(Icons.search),
+                isDense: true,
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          // ปุ่มกรองหมวดหมู่
+          if (p.monthCategories.isNotEmpty)
+            SizedBox(
+              height: 52,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: const Text('ทั้งหมด'),
+                      selected: p.categoryFilter == null,
+                      onSelected: (_) => p.setCategoryFilter(null),
+                    ),
+                  ),
+                  for (final c in p.monthCategories)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(c),
+                        selected: p.categoryFilter == c,
+                        onSelected: (_) => p.setCategoryFilter(
+                            p.categoryFilter == c ? null : c),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           Expanded(
             child: p.error != null
                 ? Center(child: Text('เกิดข้อผิดพลาด: ${p.error}'))
                 : p.loading
                     ? const Center(child: CircularProgressIndicator())
                     : items.isEmpty
-                        ? const Center(child: Text('ยังไม่มีรายการในเดือนนี้'))
+                        ? Center(
+                            child: Text(p.monthItems.isEmpty
+                                ? 'ยังไม่มีรายการในเดือนนี้'
+                                : 'ไม่พบรายการที่ตรงกับการค้นหา'))
                         : ListView.builder(
                             padding: const EdgeInsets.only(bottom: 88),
                             itemCount: items.length,
@@ -158,9 +202,15 @@ class _HomeView extends StatelessWidget {
                                 ),
                                 onDismissed: (_) {
                                   p.delete(t.id!);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text('ลบรายการแล้ว')));
+                                  ScaffoldMessenger.of(context)
+                                    ..hideCurrentSnackBar()
+                                    ..showSnackBar(SnackBar(
+                                      content: const Text('ลบรายการแล้ว'),
+                                      action: SnackBarAction(
+                                        label: 'เลิกทำ',
+                                        onPressed: () => p.add(t),
+                                      ),
+                                    ));
                                 },
                                 child: ListTile(
                                   leading: CircleAvatar(

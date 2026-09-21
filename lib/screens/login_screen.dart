@@ -39,6 +39,29 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+    Future<void> _forgotPassword() async {
+    final email = _emailCtrl.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      setState(() => _error = 'กรอกอีเมลในช่องด้านบนก่อน แล้วกด "ลืมรหัสผ่าน"');
+      return;
+    }
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    final err = await _auth.resetPassword(email);
+    if (!mounted) return;
+    setState(() {
+      _loading = false;
+      _error = err;
+    });
+    if (err == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('ส่งลิงก์รีเซ็ตรหัสผ่านไปที่ $email แล้ว (ตรวจในกล่องสแปมด้วย)'),
+      ));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,6 +110,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     validator: (v) => (v == null || v.length < 6)
                         ? 'รหัสผ่านอย่างน้อย 6 ตัวอักษร'
                         : null,
+                  ),
+                                    Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _loading ? null : _forgotPassword,
+                      child: const Text('ลืมรหัสผ่าน?'),
+                    ),
                   ),
                   if (_error != null) ...[
                     const SizedBox(height: 12),

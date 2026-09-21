@@ -47,4 +47,14 @@ class AuthService {
         return 'เกิดข้อผิดพลาด ($code)';
     }
   }
+  
+    Future<String?> resetPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+      return null;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') return 'ไม่พบอีเมลนี้ในระบบ';
+      return _message(e.code);
+    }
+  }
 }
