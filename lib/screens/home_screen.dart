@@ -9,6 +9,8 @@ import '../theme/theme_controller.dart';
 import 'add_transaction_screen.dart';
 import 'stats_screen.dart';
 
+import 'about_screen.dart';
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -129,6 +131,14 @@ class _HomeView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.info_outline),
+          tooltip: 'เกี่ยวกับโปรเจกต์',
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AboutScreen()),
+          ),
+        ),
         title: const Text('รายรับ-รายจ่าย'),
         actions: [
           Builder(

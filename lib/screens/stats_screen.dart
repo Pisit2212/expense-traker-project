@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../providers/transaction_provider.dart';
 import '../theme/app_theme.dart';
 
+import '../services/exchange_rate_service.dart';
+
 class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
 
@@ -25,6 +27,14 @@ class _StatsScreenState extends State<StatsScreen> {
 
   bool _showIncome = false;
   int _touched = -1;
+
+  late Future<double> _rateFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _rateFuture = ExchangeRateService().getUsdToThb();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +58,59 @@ class _StatsScreenState extends State<StatsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: FutureBuilder<double>(
+                future: _rateFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Row(
+                      children: [
+                        SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        SizedBox(width: 12),
+                        Text('กำลังโหลดอัตราแลกเปลี่ยน...'),
+                      ],
+                    );
+                  }
+                  if (snapshot.hasError) {
+                    return Row(
+                      children: [
+                        const Icon(Icons.wifi_off, size: 18),
+                        const SizedBox(width: 12),
+                        const Expanded(child: Text('ไม่สามารถโหลดอัตราแลกเปลี่ยนได้')),
+                        TextButton(
+                          onPressed: () => setState(() {
+                            _rateFuture = ExchangeRateService().getUsdToThb();
+                          }),
+                          child: const Text('ลองใหม่'),
+                        ),
+                      ],
+                    );
+                  }
+                  final rate = snapshot.data!;
+                  return Row(
+                    children: [
+                      const Icon(Icons.currency_exchange, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          '1 USD = ${rate.toStringAsFixed(2)} บาท',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      const Text('วันนี้', style: TextStyle(fontSize: 12)),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           // ตัวเลือกเดือน
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
