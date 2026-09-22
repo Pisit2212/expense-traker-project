@@ -85,7 +85,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: const InputDecoration(
                       labelText: 'อีเมล',
                       prefixIcon: Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(),
                     ),
                     validator: (v) => (v == null || !v.contains('@'))
                         ? 'กรุณากรอกอีเมลให้ถูกต้อง'

@@ -8,11 +8,20 @@ import 'screens/login_screen.dart';
 import 'services/auth_service.dart';
 
 import 'theme/app_theme.dart';
+import 'package:provider/provider.dart';
+import 'theme/theme_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const MyApp());
+  final themeController = ThemeController();
+  await themeController.init();
+  runApp(
+    ChangeNotifierProvider.value(
+      value: themeController,
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -20,10 +29,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeController = context.watch<ThemeController>();
     return MaterialApp(
       title: 'Expense Tracker',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: themeController.mode,
       home: const AuthGate(),
     );
   }

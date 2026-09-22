@@ -60,7 +60,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 decoration: const InputDecoration(
                   labelText: 'อีเมล',
                   prefixIcon: Icon(Icons.email_outlined),
-                  border: OutlineInputBorder(),
                 ),
                 validator: (v) => (v == null || !v.contains('@'))
                     ? 'กรุณากรอกอีเมลให้ถูกต้อง'
@@ -73,7 +72,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 decoration: const InputDecoration(
                   labelText: 'รหัสผ่าน',
                   prefixIcon: Icon(Icons.lock_outline),
-                  border: OutlineInputBorder(),
                 ),
                 validator: (v) => (v == null || v.length < 6)
                     ? 'รหัสผ่านอย่างน้อย 6 ตัวอักษร'
@@ -86,7 +84,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 decoration: const InputDecoration(
                   labelText: 'ยืนยันรหัสผ่าน',
                   prefixIcon: Icon(Icons.lock_reset),
-                  border: OutlineInputBorder(),
                 ),
                 validator: (v) =>
                     v != _passCtrl.text ? 'รหัสผ่านไม่ตรงกัน' : null,

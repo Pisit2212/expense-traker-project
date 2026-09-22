@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../models/transaction_model.dart';
 import '../providers/transaction_provider.dart';
 
+import '../theme/app_theme.dart';
+
 class AddTransactionScreen extends StatefulWidget {
   final TransactionModel? existing; // ถ้าส่งมา = โหมดแก้ไข
   const AddTransactionScreen({super.key, this.existing});
@@ -67,8 +69,45 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (picked != null) setState(() => _date = picked);
   }
 
+  Future<bool> _confirmSave() async {
+    final money = NumberFormat('#,##0.00');
+    final amount = double.tryParse(_amountCtrl.text.replaceAll(',', '')) ?? 0;
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: Icon(
+          Icons.check_circle_outline,
+          color: _type == 'income' ? AppColors.income : AppColors.expense,
+        ),
+        title: Text(widget.existing == null ? 'ยืนยันเพิ่มรายการ?' : 'ยืนยันการแก้ไข?'),
+        content: Text(
+          '$_category  ${_type == 'income' ? '+' : '-'}${money.format(amount)} บาท',
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('ยกเลิก'),
+            ),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(minimumSize: const Size(88, 44)),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('ยืนยัน'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    final confirmed = await _confirmSave();
+    if (!confirmed) return;
     setState(() => _saving = true);
 
     final t = TransactionModel(
@@ -135,7 +174,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 decoration: const InputDecoration(
                   labelText: 'จำนวนเงิน (บาท)',
                   prefixIcon: Icon(Icons.payments_outlined),
-                  border: OutlineInputBorder(),
                 ),
                 validator: (v) {
                   final n = double.tryParse((v ?? '').replaceAll(',', ''));
@@ -149,7 +187,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 decoration: const InputDecoration(
                   labelText: 'หมวดหมู่',
                   prefixIcon: Icon(Icons.category_outlined),
-                  border: OutlineInputBorder(),
                 ),
                 items: _cats
                     .map((c) => DropdownMenuItem(value: c, child: Text(c)))
@@ -163,7 +200,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   decoration: const InputDecoration(
                     labelText: 'วันที่',
                     prefixIcon: Icon(Icons.calendar_today_outlined),
-                    border: OutlineInputBorder(),
                   ),
                   child: Text(DateFormat('d MMM yyyy').format(_date)),
                 ),
@@ -174,7 +210,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 decoration: const InputDecoration(
                   labelText: 'โน้ต (ไม่บังคับ)',
                   prefixIcon: Icon(Icons.notes),
-                  border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 24),

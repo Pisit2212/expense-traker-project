@@ -5,6 +5,7 @@ import '../models/transaction_model.dart';
 import '../providers/transaction_provider.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
 import 'add_transaction_screen.dart';
 import 'stats_screen.dart';
 
@@ -50,6 +51,76 @@ class _HomeView extends StatelessWidget {
     );
   }
 
+  Future<bool> _confirmDelete(BuildContext context, TransactionModel t) async {
+    final money = NumberFormat('#,##0.00');
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(Icons.delete_outline, color: AppColors.expense),
+        title: const Text('ลบรายการนี้?'),
+        content: Text(
+          '${t.category}  ${t.isIncome ? '+' : '-'}${money.format(t.amount)} บาท\n'
+          'ต้องการลบรายการนี้ใช่ไหม',
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('ยกเลิก'),
+            ),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.expense,
+              minimumSize: const Size(88, 44),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('ลบ'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false; // แตะนอกกล่อง = ไม่ลบ
+  }
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(Icons.logout),
+        title: const Text('ออกจากระบบ?'),
+        content: const Text(
+          'ข้อมูลของคุณยังถูกเก็บไว้ และกลับมาดูได้เมื่อเข้าสู่ระบบอีกครั้ง',
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('ยกเลิก'),
+            ),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.expense,
+              minimumSize: const Size(88, 44),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('ออกจากระบบ'),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) {
+      await AuthService().logout(); // AuthGate จะพากลับหน้า Login เอง
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = context.watch<TransactionProvider>();
@@ -60,6 +131,16 @@ class _HomeView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('รายรับ-รายจ่าย'),
         actions: [
+          Builder(
+            builder: (context) {
+              final tc = context.watch<ThemeController>();
+              return IconButton(
+                icon: Icon(tc.isDark ? Icons.light_mode : Icons.dark_mode),
+                tooltip: tc.isDark ? 'โหมดสว่าง' : 'โหมดมืด',
+                onPressed: () => context.read<ThemeController>().toggle(),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.bar_chart),
             tooltip: 'สถิติ',
@@ -68,7 +149,7 @@ class _HomeView extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'ออกจากระบบ',
-            onPressed: () => AuthService().logout(),
+            onPressed: () => _confirmLogout(context),
           ),
         ],
       ),
@@ -141,7 +222,6 @@ class _HomeView extends StatelessWidget {
                 hintText: 'ค้นหาจากโน้ตหรือหมวดหมู่',
                 prefixIcon: Icon(Icons.search),
                 isDense: true,
-                border: OutlineInputBorder(),
               ),
             ),
           ),
@@ -193,6 +273,8 @@ class _HomeView extends StatelessWidget {
                               return Dismissible(
                                 key: ValueKey(t.id),
                                 direction: DismissDirection.endToStart,
+                                confirmDismiss: (_) =>
+                                    _confirmDelete(context, t),
                                 background: Container(
                                   color: Colors.red,
                                   alignment: Alignment.centerRight,
@@ -201,16 +283,23 @@ class _HomeView extends StatelessWidget {
                                       color: Colors.white),
                                 ),
                                 onDismissed: (_) {
+                                  final removed = t;
                                   p.delete(t.id!);
-                                  ScaffoldMessenger.of(context)
-                                    ..hideCurrentSnackBar()
-                                    ..showSnackBar(SnackBar(
-                                      content: const Text('ลบรายการแล้ว'),
-                                      action: SnackBarAction(
-                                        label: 'เลิกทำ',
-                                        onPressed: () => p.add(t),
-                                      ),
-                                    ));
+                                  final messenger =
+                                      ScaffoldMessenger.of(context);
+                                  final controller =
+                                      messenger.showSnackBar(SnackBar(
+                                    content: const Text('ลบรายการแล้ว'),
+                                    duration: const Duration(seconds: 30),
+                                    action: SnackBarAction(
+                                      label: 'เลิกทำ',
+                                      onPressed: () => p.add(removed),
+                                    ),
+                                  ));
+                                  Future.delayed(
+                                      const Duration(seconds: 5), () {
+                                    controller.close();
+                                  });
                                 },
                                 child: ListTile(
                                   leading: CircleAvatar(
@@ -235,6 +324,7 @@ class _HomeView extends StatelessWidget {
                                     '${t.isIncome ? '+' : '-'}${money.format(t.amount)}',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
+                                      fontSize: 14,
                                       color: t.isIncome
                                           ? AppColors.income
                                           : AppColors.expense,
@@ -265,7 +355,9 @@ class _SummaryTile extends StatelessWidget {
       children: [
         Text(label),
         Text(value,
-            style: TextStyle(fontWeight: FontWeight.bold, color: color)),
+            style: TextStyle(fontWeight: FontWeight.bold,
+            color: color,
+            fontSize: 16)),
       ],
     );
   }
