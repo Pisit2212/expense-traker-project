@@ -261,6 +261,24 @@ class _StatsScreenState extends State<StatsScreen> {
                         maxY: maxY * 1.2,
                         gridData: const FlGridData(show: false),
                         borderData: FlBorderData(show: false),
+                        barTouchData: BarTouchData(
+                          touchTooltipData: BarTouchTooltipData(
+                            getTooltipColor: (group) =>
+                                Theme.of(context).colorScheme.inverseSurface,
+                            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                              final money = NumberFormat('#,##0.00');
+                              return BarTooltipItem(
+                                money.format(rod.toY),
+                                TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onInverseSurface,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                         titlesData: FlTitlesData(
                           topTitles: const AxisTitles(
                               sideTitles: SideTitles(showTitles: false)),

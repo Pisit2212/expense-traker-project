@@ -131,26 +131,31 @@ class _HomeView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.info_outline),
-          tooltip: 'เกี่ยวกับโปรเจกต์',
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AboutScreen()),
-          ),
+        leadingWidth: 96,
+        leading: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.info_outline),
+              tooltip: 'เกี่ยวกับโปรเจกต์',
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AboutScreen()),
+              ),
+            ),
+            Builder(
+              builder: (context) {
+                final tc = context.watch<ThemeController>();
+                return IconButton(
+                  icon: Icon(tc.isDark ? Icons.light_mode : Icons.dark_mode),
+                  tooltip: tc.isDark ? 'โหมดสว่าง' : 'โหมดมืด',
+                  onPressed: () => context.read<ThemeController>().toggle(),
+                );
+              },
+            ),
+          ],
         ),
         title: const Text('รายรับ-รายจ่าย'),
         actions: [
-          Builder(
-            builder: (context) {
-              final tc = context.watch<ThemeController>();
-              return IconButton(
-                icon: Icon(tc.isDark ? Icons.light_mode : Icons.dark_mode),
-                tooltip: tc.isDark ? 'โหมดสว่าง' : 'โหมดมืด',
-                onPressed: () => context.read<ThemeController>().toggle(),
-              );
-            },
-          ),
           IconButton(
             icon: const Icon(Icons.bar_chart),
             tooltip: 'สถิติ',
