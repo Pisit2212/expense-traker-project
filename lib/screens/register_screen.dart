@@ -34,7 +34,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final err = await _auth.register(_emailCtrl.text, _passCtrl.text);
     if (!mounted) return;
     if (err == null) {
-      // สมัครสำเร็จ Firebase ล็อกอินให้อัตโนมัติ -> ปิดหน้านี้เพื่อให้เห็น Home
       Navigator.of(context).pop();
     } else {
       setState(() {

@@ -7,7 +7,7 @@ import '../providers/transaction_provider.dart';
 import '../theme/app_theme.dart';
 
 class AddTransactionScreen extends StatefulWidget {
-  final TransactionModel? existing; // ถ้าส่งมา = โหมดแก้ไข
+  final TransactionModel? existing; 
   const AddTransactionScreen({super.key, this.existing});
 
   @override
@@ -46,7 +46,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       _category = _cats.first;
       final m = context.read<TransactionProvider>().month;
       final now = DateTime.now();
-      final lastDay = DateTime(m.year, m.month + 1, 0).day; // วันสุดท้ายของเดือนนั้น
+      final lastDay = DateTime(m.year, m.month + 1, 0).day;
       final day = now.day > lastDay ? lastDay : now.day;
       _date = DateTime(m.year, m.month, day, now.hour, now.minute, now.second);
     }

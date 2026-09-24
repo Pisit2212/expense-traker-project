@@ -46,7 +46,7 @@ class TransactionProvider extends ChangeNotifier {
       .where((t) => t.date.year == _month.year && t.date.month == _month.month)
       .toList();
 
-  /// รายการที่แสดงในลิสต์ (ผ่านตัวกรองหมวดหมู่และคำค้นหาแล้ว)
+  /// รายการที่แสดงใน list
   List<TransactionModel> get filteredItems {
     final q = _query.trim().toLowerCase();
     return monthItems.where((t) {
@@ -58,7 +58,7 @@ class TransactionProvider extends ChangeNotifier {
     }).toList();
   }
 
-  /// หมวดหมู่ที่มีในเดือนที่เลือก (ไว้ทำปุ่มกรอง)
+  /// หมวดหมู่ที่มีในเดือนที่เลือก ไว้ทำปุ่มกรอง
   List<String> get monthCategories =>
       (monthItems.map((t) => t.category).toSet().toList()..sort());
 
@@ -101,7 +101,7 @@ class TransactionProvider extends ChangeNotifier {
 
   void changeMonth(int delta) {
     _month = DateTime(_month.year, _month.month + delta);
-    _categoryFilter = null; // เปลี่ยนเดือนแล้วล้างตัวกรองหมวดหมู่
+    _categoryFilter = null; 
     notifyListeners();
   }
 

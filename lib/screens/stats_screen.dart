@@ -127,7 +127,6 @@ class _StatsScreenState extends State<StatsScreen> {
           ),
           const SizedBox(height: 8),
 
-          // ---------- กราฟวงกลม ----------
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -234,8 +233,7 @@ class _StatsScreenState extends State<StatsScreen> {
           ),
 
           const SizedBox(height: 12),
-
-          // ---------- กราฟแท่ง ----------
+          
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),

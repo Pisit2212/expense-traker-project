@@ -5,7 +5,6 @@ class FirestoreService {
   final String uid;
   FirestoreService(this.uid);
 
-  // ข้อมูลเก็บที่ users/{uid}/transactions/{id} แยกตามผู้ใช้
   CollectionReference<Map<String, dynamic>> get _col => FirebaseFirestore
       .instance
       .collection('users')

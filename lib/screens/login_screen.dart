@@ -35,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
     setState(() {
       _loading = false;
-      _error = err; // ถ้าสำเร็จ AuthGate จะสลับไปหน้า Home เอง
+      _error = err;
     });
   }
 

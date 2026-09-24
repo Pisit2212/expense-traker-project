@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ExchangeRateService {
-  /// คืนค่า 1 USD = กี่บาท, โยน Exception ถ้าดึงไม่สำเร็จ
   Future<double> getUsdToThb() async {
     final uri = Uri.parse('https://open.er-api.com/v6/latest/USD');
     final res = await http.get(uri).timeout(const Duration(seconds: 10));

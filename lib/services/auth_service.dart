@@ -6,7 +6,6 @@ class AuthService {
   Stream<User?> get authState => _auth.authStateChanges();
   User? get currentUser => _auth.currentUser;
 
-  /// คืนค่า null = สำเร็จ, คืน String = ข้อความ error
   Future<String?> register(String email, String password) async {
     try {
       await _auth.createUserWithEmailAndPassword(

@@ -85,7 +85,7 @@ class _HomeView extends StatelessWidget {
         ],
       ),
     );
-    return result ?? false; // แตะนอกกล่อง = ไม่ลบ
+    return result ?? false;
   }
 
   Future<void> _confirmLogout(BuildContext context) async {
@@ -119,7 +119,7 @@ class _HomeView extends StatelessWidget {
       ),
     );
     if (ok == true) {
-      await AuthService().logout(); // AuthGate จะพากลับหน้า Login เอง
+      await AuthService().logout();
     }
   }
 
@@ -192,7 +192,7 @@ class _HomeView extends StatelessWidget {
               ],
             ),
           ),
-          // การ์ดสรุป
+          
           Card(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             child: Padding(
@@ -240,7 +240,7 @@ class _HomeView extends StatelessWidget {
               ),
             ),
           ),
-          // ปุ่มกรองหมวดหมู่
+          
           if (p.monthCategories.isNotEmpty)
             SizedBox(
               height: 52,

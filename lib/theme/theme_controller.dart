@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeController extends ChangeNotifier {
-  static const _key = 'theme_mode'; // 'light' | 'dark' | 'system'
+  static const _key = 'theme_mode';
   ThemeMode _mode = ThemeMode.system;
 
   ThemeMode get mode => _mode;
